@@ -1,0 +1,36 @@
+---
+- name: Compliance and Vulnerability Scanning
+  hosts: all
+  vars:
+    - scanDir: /home/cjenkins/OpenSCAP-EU-DIGIT/openscap/scan
+    - vulnDir: /home/cjenkins/OpenSCAP-EU-DIGIT/openscap/vulnerabilities
+    - tailorFile: /home/cjenkins/OpenSCAP-EU-DIGIT/tailoring-xccdf.xml
+    - ovalFile: /home/cjenkins/OpenSCAP-EU-DIGIT/rhel-8.oval.xml
+  tasks:
+   - name: Ensure the OpenSCAP packages are install on the target hosts
+     yum:
+        state: present
+        name:
+          - scap-security-guide
+          - openscap-scanner
+
+   - name: Copy tailor file and RHEL8 OVAL file to target
+     copy:
+        src: "{{item}}"
+        dest: '/tmp'
+     loop:
+         - "{{ tailorFile }}"
+         - "{{ ovalFile }}"
+
+   - name: Include OpenSCAP Compliance Scan
+     include_tasks: compliance/main.yml
+
+   - name: Include OpenSCAP Vulnerability Scan
+     include_tasks: vulnerability/main.yml
+
+#   - name: Remove OpenSCAP packages from the target hosts
+#     yum:
+#        state: absent
+#        name:
+#          - scap-security-guide
+#          - openscap-scanner

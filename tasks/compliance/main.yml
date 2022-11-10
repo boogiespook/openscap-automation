@@ -1,0 +1,17 @@
+---
+
+- name: Start OpenSCAP Compliance check
+  shell: oscap xccdf eval --tailoring-file /tmp/tailoring-xccdf.xml --results /tmp/results.xml --report /tmp/report.html --profile cis_digit /usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml &> /dev/null || /bin/true
+  ignore_errors: yes
+
+- name: Copy the Compliance report back to localhost
+  fetch:
+     src: /tmp/report.html
+     dest: "{{ scanDir }}/{{ inventory_hostname }}_Compliance_{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}_report.html"
+     flat: yes
+
+- name: Copy the Compliance results back to localhost
+  fetch:
+     src: /tmp/results.xml
+     dest: "{{ scanDir }}/{{ inventory_hostname }}_Compliance_{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}_results.xml"
+     flat: yes
